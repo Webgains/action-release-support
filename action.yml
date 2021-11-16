@@ -1,0 +1,88 @@
+name: Tag project for release
+
+description: Tag a project for release as well as copying SAM templates to S3 and tagging Docker images
+
+inputs:
+  version:
+    description: The release version e.g. v3.0.0 or v3.0.0-rc1
+    required: true
+  project-name:
+    description: The name of the project e.g. Example Service
+    required: true
+  primary-s3-bucket:
+    description: The first S3 bucket to copy the SAM template to
+    required: false
+  secondary-s3-bucket:
+    description: The second S3 bucket to copy the SAM template to
+    required: false
+  aws-access-key-id:
+    description: The AWS access key to use, required when using S3 or ECR
+    required: false
+  aws-secret-access-key:
+    description: The AWS secret access key to use, required when using S3 or ECR
+    required: false
+  aws-region:
+    description: The AWS region to use as the default
+    required: false
+    default: eu-west-1
+  aws-account-id:
+    description: The AWS account ID used when logging into AWS ECR
+    required: false
+  aws-ecr-repository:
+    description: The ECR repository to push Docker images to
+    required: false
+  ssh-key:
+    description: Required when checking out repositories containing submodules
+    required: false
+  author-email:
+    description: The email of the author used when tagging submodules
+    required: true
+  author-name:
+    description: The name of the author used when tagging submodules
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: true
+        ssh-key: ${{ inputs.ssh-key }}
+        ref: ${{ inputs.version }}
+
+    - name: Tag submodules
+      shell: bash
+      run: |
+        SUBMODULE_TAG_NAME=$(echo ${{ inputs.project-name }} | sed -e 's/ /_/g' | tr '[:upper:]' '[:lower:]')
+        git config --global user.email "${{ inputs.author-email }}"
+        git config --global user.name "${{ inputs.author-name }}"
+        git submodule foreach git tag -m "${{ inputs.project-name }} Release ${{ inputs.version }}" "${SUBMODULE_TAG_NAME}_${{ inputs.version }}"
+        git submodule foreach git push --tags
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      if: ${{ inputs.primary-s3-bucket || inputs.aws-ecr-repository }}
+      with:
+        aws-access-key-id: ${{ inputs.aws-access-key-id }}
+        aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
+        aws-region: ${{ inputs.aws-region }}
+
+    - name: Copy SAM templates in S3
+      shell: bash
+      if: ${{ inputs.primary-s3-bucket && inputs.secondary-s3-bucket }}
+      run: |
+        GIT_HASH=$(git rev-parse HEAD | head -c 8)
+        echo "GIT_HASH=$GIT_HASH" >> $GITHUB_ENV
+        aws s3 cp s3://${{ inputs.primary-s3-bucket }}/hash/$GIT_HASH/template.yml s3://${{ inputs.primary-s3-bucket }}/${{ inputs.version }}/template.yml
+        aws s3 cp s3://${{ inputs.secondary-s3-bucket }}/hash/$GIT_HASH/template.yml s3://${{ inputs.secondary-s3-bucket }}/${{ inputs.version }}/template.yml
+
+    - name: Tag Docker images
+      shell: bash
+      if: ${{ inputs.aws-ecr-repository }}
+      run: |
+        aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin ${{ inputs.aws-account-id }}.dkr.ecr.eu-west-1.amazonaws.com
+        REPOSITORY_URI=${{ inputs.aws-ecr-repository }}
+        docker pull $REPOSITORY_URI:$GIT_HASH
+        docker tag $REPOSITORY_URI:$GIT_HASH $REPOSITORY_URI:${{ inputs.version }}
+        docker push --all-tags $REPOSITORY_URI
