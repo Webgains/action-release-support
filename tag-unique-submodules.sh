@@ -46,4 +46,4 @@ then
   exit 1
 fi
 
-git submodule foreach 'tag-functions'
+git submodule foreach 'tag-functions.sh'
