@@ -21,4 +21,6 @@ function tag_submodule_and_push_tags() {
   git push --tags
 }
 
+echo I am running! 
+
 if ! tag_exists; then tag_submodule_and_push_tags; fi
