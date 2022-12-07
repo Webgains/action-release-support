@@ -38,8 +38,6 @@ function identical_submodules_point_at_same_hash() {
   return 1
 }
 
-export -f tag_exists
-export -f tag_submodule_and_push_tags
 export -f identical_submodules_point_at_same_hash
 
 if ! identical_submodules_point_at_same_hash
