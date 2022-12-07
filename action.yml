@@ -54,7 +54,6 @@ runs:
     - name: Tag submodules
       shell: bash
       run: |
-        echo "${{ github.action_path }}" >> $GITHUB_PATH
         SUBMODULE_TAG_NAME=$(echo ${{ inputs.project-name }} | sed -e 's/ /_/g' | tr '[:upper:]' '[:lower:]')
         git config --global user.email "${{ inputs.author-email }}"
         git config --global user.name "${{ inputs.author-name }}"
