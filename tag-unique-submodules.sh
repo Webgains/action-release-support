@@ -46,4 +46,4 @@ then
   exit 1
 fi
 
-git submodule foreach 'source tag-functions.sh'
+git submodule foreach 'source tag-functions'
