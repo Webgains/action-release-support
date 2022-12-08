@@ -57,7 +57,7 @@ runs:
         SUBMODULE_TAG_NAME=$(echo ${{ inputs.project-name }} | sed -e 's/ /_/g' | tr '[:upper:]' '[:lower:]')
         git config --global user.email "${{ inputs.author-email }}"
         git config --global user.name "${{ inputs.author-name }}"
-        git submodule foreach 'git tag -m "${project_name} Release ${version}" "${tag_name}_${version}" || :'
+        git submodule foreach 'git tag -m "${{ inputs.project-name }} Release ${{ inputs.version }}" "$SUBMODULE_TAG_NAME_${{ inputs.version }}" || :'
         git submodule 'foreach git push --tags || :'
 
     - name: Configure AWS Credentials
