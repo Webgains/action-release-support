@@ -52,6 +52,7 @@ runs:
         ref: ${{ inputs.version }}
 
     - name: Tag submodules
+      uses: actions/checkout@v2
       shell: bash
       run: |
         SUBMODULE_TAG_NAME=$(echo ${{ inputs.project-name }} | sed -e 's/ /_/g' | tr '[:upper:]' '[:lower:]')
