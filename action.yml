@@ -53,7 +53,10 @@ runs:
 
     - name: Tag submodules
       uses: actions/checkout@v2
-      shell: bash
+      with:
+        submodules: true
+        ssh-key: ${{ inputs.ssh-key }}
+        ref: ${{ inputs.version }}
       run: |
         SUBMODULE_TAG_NAME=$(echo ${{ inputs.project-name }} | sed -e 's/ /_/g' | tr '[:upper:]' '[:lower:]')
         git config --global user.email "${{ inputs.author-email }}"
