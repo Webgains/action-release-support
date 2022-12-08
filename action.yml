@@ -52,12 +52,9 @@ runs:
         ref: ${{ inputs.version }}
 
     - name: Tag submodules
-      uses: actions/checkout@v2
-      with:
-        submodules: true
-        ssh-key: ${{ inputs.ssh-key }}
-        ref: ${{ inputs.version }}
+      shell: bash
       run: |
+        GIT_HASH=$(git rev-parse HEAD | head -c 8)
         SUBMODULE_TAG_NAME=$(echo ${{ inputs.project-name }} | sed -e 's/ /_/g' | tr '[:upper:]' '[:lower:]')
         git config --global user.email "${{ inputs.author-email }}"
         git config --global user.name "${{ inputs.author-name }}"
@@ -66,6 +63,7 @@ runs:
         OTHER=`git submodule foreach git rev-parse HEAD`
         git submodule foreach git tag -m "${{ inputs.project-name }} Release ${{ inputs.version }}" "$SUBMODULE_TAG_NAME_${{ inputs.version }}" || :
         git submodule foreach git push --tags || :
+        echo $GIT_HASH
         echo $STATUS
         echo $OTHER
         echo $SUBMODULE_TAG_NAME
