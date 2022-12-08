@@ -58,6 +58,8 @@ runs:
         SUBMODULE_TAG_NAME=$(echo ${{ inputs.project-name }} | sed -e 's/ /_/g' | tr '[:upper:]' '[:lower:]')
         git config --global user.email "${{ inputs.author-email }}"
         git config --global user.name "${{ inputs.author-name }}"
+        git submodule add git@github.com:Webgains/node-aws-support.git app/rtu/node-aws-support
+        git submodule add git@github.com:Webgains/node-aws-support.git app/scheduler/node-aws-support
         git submodule update --init --recursive
         STATUS=$(git submodule status)
         OTHER=$(git submodule foreach git rev-parse HEAD)
