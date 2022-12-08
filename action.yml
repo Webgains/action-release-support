@@ -59,8 +59,8 @@ runs:
         git config --global user.email "${{ inputs.author-email }}"
         git config --global user.name "${{ inputs.author-name }}"
         git submodule update --init --recursive
-        STATUS=`git submodule status`
-        OTHER=`git submodule foreach git rev-parse HEAD`
+        STATUS=$(git submodule status)
+        OTHER=$(git submodule foreach git rev-parse HEAD)
         git submodule foreach git tag -m "${{ inputs.project-name }} Release ${{ inputs.version }}" "$SUBMODULE_TAG_NAME_${{ inputs.version }}" || :
         git submodule foreach git push --tags || :
         echo $GIT_HASH
