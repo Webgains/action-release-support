@@ -52,7 +52,7 @@ runs:
         ref: ${{ inputs.version }}
 
     - name: Tag submodules
-      shell: bash -l {0}
+      shell: bash
       run: |
         SUBMODULE_TAG_NAME=$(echo ${{ inputs.project-name }} | sed -e 's/ /_/g' | tr '[:upper:]' '[:lower:]')
         git config --global user.email "${{ inputs.author-email }}"
