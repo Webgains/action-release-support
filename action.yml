@@ -54,7 +54,7 @@ runs:
     - name: Add ssh-agent
       uses: webfactory/ssh-agent@v0.7.0
       with:
-        ssh-private-key: "${{ secrets.SSH_KEY }}"
+        ssh-private-key: ${{ inputs.ssh-key }}
     
     - name: Tag submodules
       shell: bash
