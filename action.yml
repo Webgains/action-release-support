@@ -54,21 +54,10 @@ runs:
     - name: Tag submodules
       shell: bash
       run: |
-        GIT_HASH=$(git rev-parse HEAD | head -c 8)
-        MYDIR=$(ls -ltr ${GITHUB_WORKSPACE}/app/)
         SUBMODULE_TAG_NAME=$(echo ${{ inputs.project-name }} | sed -e 's/ /_/g' | tr '[:upper:]' '[:lower:]')
         git config --global user.email "${{ inputs.author-email }}"
         git config --global user.name "${{ inputs.author-name }}"
-        git submodule update --init --recursive
-        STATUS=$(git submodule status)
-        OTHER=$(git submodule foreach git rev-parse HEAD)
-        git submodule foreach git tag -m "${{ inputs.project-name }} Release ${{ inputs.version }}" "$SUBMODULE_TAG_NAME_${{ inputs.version }}" || :
-        git submodule foreach git push --tags || :
-        echo $MYDIR
-        echo $GIT_HASH
-        echo $STATUS
-        echo $OTHER
-        echo $SUBMODULE_TAG_NAME
+        source ${{ github.action_path }}/tag-unique-submodules.sh -p "${{ inputs.project-name }}" -v "${{ inputs.version }}" -t "$SUBMODULE_TAG_NAME"
 
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
