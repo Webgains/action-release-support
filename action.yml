@@ -52,6 +52,9 @@ runs:
         ref: ${{ inputs.version }}
 
     - name: Tag submodules
+      uses: webfactory/ssh-agent@v0.7.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       shell: bash
       run: |
         SUBMODULE_TAG_NAME=$(echo ${{ inputs.project-name }} | sed -e 's/ /_/g' | tr '[:upper:]' '[:lower:]')
