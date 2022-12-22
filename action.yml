@@ -51,10 +51,12 @@ runs:
         ssh-key: ${{ inputs.ssh-key }}
         ref: ${{ inputs.version }}
 
-    - name: Tag submodules
+    - name: Add ssh-agent
       uses: webfactory/ssh-agent@v0.7.0
       with:
         ssh-private-key: ${{ secrets.SSH_KEY }}
+    
+    - name: Tag submodules
       shell: bash
       run: |
         SUBMODULE_TAG_NAME=$(echo ${{ inputs.project-name }} | sed -e 's/ /_/g' | tr '[:upper:]' '[:lower:]')
