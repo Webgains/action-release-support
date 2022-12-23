@@ -46,17 +46,15 @@ then
   exit 1
 fi
 
-#git submodule foreach 'source tag-functions'
 git submodule foreach "
-  git fetch --all --tags;
-  TAG=\${tag_name}_${version};
-  if [ \$(git tag -l \$TAG) ];
-  then
-    echo Tag exists;
-  else
-    echo "Tag does not exist";
-    echo "Tagging submodule";
-    git tag -m \${project_name} Release ${version} ${tag_name}_${version};
-    git push --tags;
-  fi
+  git fetch --all --tags
+  TAG=\${tag_name}_\${version};
+  TAG_EXISTS=\$(git tag -l \$TAG)
+  if [ -z \"\${TAG_EXISTS}\" ];
+    then echo Tag does not exist;
+         echo Tagging submodule;
+         git tag -m \"\${project_name} Release \${version}\" \${tag_name}_\${version};
+         git push --tags;
+    else echo Tag exists;
+  fi;
 "
