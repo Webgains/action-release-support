@@ -15,26 +15,6 @@ export project_name
 export version
 export tag_name
 
-# Check whether the tag already exists in the submodule
-function tag_exists() {
-  TAG="${tag_name}_${version}"
-  if [ "$(git tag -l "$TAG")" ]
-  then
-    echo "Tag exists"
-    return 0
-  fi
-
-  echo "Tag does not exist"
-  return 1
-}
-
-# Tag the submodule and push those tags
-function tag_submodule_and_push_tags() {
-  echo "Tagging submodule"
-  git tag -m "${project_name} Release ${version}" "${tag_name}_${version}"
-  git push --tags
-}
-
 # Check whether any identical submodules point at different git hashes. If they do, we need to
 # stop the process early otherwise the git tags won't work correctly.
 function identical_submodules_point_at_same_hash() {
@@ -58,8 +38,6 @@ function identical_submodules_point_at_same_hash() {
   return 1
 }
 
-export -f tag_exists
-export -f tag_submodule_and_push_tags
 export -f identical_submodules_point_at_same_hash
 
 if ! identical_submodules_point_at_same_hash
@@ -68,4 +46,15 @@ then
   exit 1
 fi
 
-git submodule foreach 'if ! tag_exists; then tag_submodule_and_push_tags; fi'
+git submodule foreach "
+  git fetch --all --tags
+  TAG=\${tag_name}_\${version};
+  TAG_EXISTS=\$(git tag -l \$TAG)
+  if [ -z \"\${TAG_EXISTS}\" ];
+    then echo Tag does not exist;
+         echo Tagging submodule;
+         git tag -m \"\${project_name} Release \${version}\" \${tag_name}_\${version};
+         git push --tags;
+    else echo Tag exists;
+  fi;
+"
