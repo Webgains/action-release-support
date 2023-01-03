@@ -57,8 +57,7 @@ runs:
         SUBMODULE_TAG_NAME=$(echo ${{ inputs.project-name }} | sed -e 's/ /_/g' | tr '[:upper:]' '[:lower:]')
         git config --global user.email "${{ inputs.author-email }}"
         git config --global user.name "${{ inputs.author-name }}"
-        git submodule foreach git tag -m "${{ inputs.project-name }} Release ${{ inputs.version }}" "${SUBMODULE_TAG_NAME}_${{ inputs.version }}"
-        git submodule foreach git push --tags
+        source ${{ github.action_path }}/tag-unique-submodules.sh -p "${{ inputs.project-name }}" -v "${{ inputs.version }}" -t "$SUBMODULE_TAG_NAME"
 
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
